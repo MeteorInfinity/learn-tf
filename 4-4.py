@@ -30,9 +30,10 @@ prediction = tf.nn.softmax(tf.matmul(x, W)+b)
 
 # 代价函数与梯度下降
 # loss = tf.reduce_mean(-tf.reduce_sum(y*tf.log(prediction), reduction_indices=[1]))
-# 交叉熵（代价）
+# 交叉熵（代价函数）
 loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=y, logits=prediction))
-train_step = tf.train.GradientDescentOptimizer(0.2).minimize(loss)
+# Adam优化器
+train_step = tf.train.AdamOptimizer(1e-2).minimize(loss)
 
 init = tf.global_variables_initializer()
 
