@@ -1,5 +1,5 @@
-# Dropout
-# 防止过拟合
+# 多层神经网络
+# Dropout-防止过拟合
 
 import tensorflow as tf
 from tensorflow.examples.tutorials.mnist import input_data
