@@ -8,6 +8,8 @@ build
 
 # Dataset
 *.gz
+*.png
+*.jpg
 
 # logs
 *.METEORPC-WIN10
