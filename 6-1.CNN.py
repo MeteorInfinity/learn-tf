@@ -7,24 +7,29 @@ minst = input_data.read_data_sets('MINST_data', one_hot=True)
 batch_size = 100
 batch_num = minst.train.num_examples
 
+
 # 权值
 def weight_variable(shape):
     initial = tf.truncated_normal(shape, stddev=0.1)
     return tf.Variable(initial)
+
 
 # 偏置值
 def bias_variable(shape):
     initial = tf.constant(0.1, shape=shape)
     return  tf.Variable(initial)
 
+
 # 卷积层
 def conv2d(x, W):
     return tf.nn.conv2d(x, W, strides=[1,1,1,1], padding='SAME')
+
 
 # 池化层
 def max_pool_2x2(conv):
     # ksize [1,x,y,1]
     return  tf.nn.max_pool(conv, ksize=[1,2,2,1], strides=[1,2,2,1], padding='SAME')
+
 
 # 占位符
 x = tf.placeholder(tf.float32, [None,784])
@@ -51,7 +56,7 @@ b_fc1 = bias_variable([1024])  # 1024个节点
 h_pool2_flat = tf.reshape(h_pool2, [-1, 7*7*64])  # 将卷积层2的池化层输出扁平化为1维
 h_fc1 = tf.nn.relu(tf.matmul(h_pool2_flat, W_fc1) + b_fc1)  # 求全连接层1的输出
 
-# drpoout
+# Drpoout
 keep_prob = tf.placeholder(tf.float32)  # 神经元的输出概率
 h_fc1_drop = tf.nn.dropout(h_fc1, keep_prob)
 
@@ -67,7 +72,7 @@ loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=y, logits=p
 # 优化器
 train_step = tf.train.AdamOptimizer(1e-4).minimize(loss)
 
-# 结果集(布尔表)
+# 结果集(一维向量中最大值位置)
 correct_prediction = tf.equal(tf.argmax(prediction, 1), tf.argmax(y, 1))
 # 准确率
 accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
