@@ -1,6 +1,9 @@
 import tensorflow as tf
 from tensorflow.examples.tutorials.mnist import input_data
 
+# 清空缓存图
+tf.reset_default_graph()
+
 minst = input_data.read_data_sets('MINST_data', one_hot=True)
 
 # 批次（大小与数量）
@@ -71,7 +74,7 @@ with tf.name_scope('conv2'):
     with tf.name_scope('b_conv2'):
         b_conv2 = bias_variable([64], name='b_conv2')  #每个卷积核一个偏置值
     with tf.name_scope('conv2d_2'):
-        conv2d_2 = conv2d(x_image, W_conv2) + b_conv2  # 卷积(Wx + b)
+        conv2d_2 = conv2d(h_pool1, W_conv2) + b_conv2  # 卷积(Wx + b)
     with tf.name_scope('relu_2'):
         h_conv2 = tf.nn.relu(conv2d_2)  # 激活函数
     with tf.name_scope('h_pool2'):
@@ -89,12 +92,10 @@ with tf.name_scope('fc1'):
         wx_plus_b1 = tf.matmul(h_pool2_flat, W_fc1) + b_fc1  # 求全连接层1的输出
     with tf.name_scope('relu'):
         h_fc1 = tf.nn.relu(wx_plus_b1)  # 求全连接层1的输出
-
-# Drpoout
-with tf.name_scope('keep_prob'):
-    keep_prob = tf.placeholder(tf.float32, name='keep_prob')  # 神经元的输出概率
-with tf.name_scope('h_fc1_drop'):
-    h_fc1_drop = tf.nn.dropout(h_fc1, keep_prob, name='h_fc1_drop')
+    with tf.name_scope('keep_prob'):
+        keep_prob = tf.placeholder(tf.float32, name='keep_prob')  # 神经元的输出概率
+    with tf.name_scope('h_fc1_drop'):
+        h_fc1_drop = tf.nn.dropout(h_fc1, keep_prob, name='h_fc1_drop')  # drpoout
 
 # 全连接层 2
 with tf.name_scope('fc2'):
@@ -117,6 +118,7 @@ with tf.name_scope('accuracy'):
         correct_prediction = tf.equal(tf.argmax(prediction, 1), tf.argmax(y, 1))  # 结果集(一维向量中最大值位置)
     with tf.name_scope('accuracy'):
         accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))  # 准确率
+        tf.summary.scalar('accuracy', accuracy)
 
 # 合并所有的summary
 merged = tf.summary.merge_all()
@@ -126,7 +128,7 @@ with tf.Session() as sess:
     train_writer = tf.summary.FileWriter('logs/train', sess.graph)
     test_writer = tf.summary.FileWriter('logs/test', sess.graph)
 
-    for i in range(1001):
+    for i in range(2001):
         # 训练模型
         batch_xs, batch_ys = minst.train.next_batch(batch_size)
         sess.run(train_step, feed_dict={x: batch_xs, y: batch_ys, keep_prob: 0.5})
@@ -144,10 +146,3 @@ with tf.Session() as sess:
             test_acc = sess.run(accuracy, feed_dict={x: minst.test.images, y: minst.test.labels, keep_prob: 1.0})
             train_acc = sess.run(accuracy, feed_dict={x: minst.train.images[:10000], y: minst.train.labels[:10000], keep_prob: 1.0})
             print("Iter " + str(i) + ", Testing Accuracy= " + str(test_acc) + ", Training Accuracy= " + str(train_acc))
-
-    for epoch in range(21):
-        for batch in range(batch_num):
-            batch_xs,batch_ys = minst.train.next_batch(batch_size)
-            sess.run(train_step, feed_dict={x: batch_xs, y: batch_ys, keep_prob: 0.7})
-        acc = sess.run(accuracy, feed_dict={x: minst.test.images, y: minst.test.labels, keep_prob: 1.0})
-        print("Iter " + str(epoch) + ", Testing Accuracy= " + str(acc))
